@@ -105,6 +105,7 @@
            #:obj-desig?
            #:action-desig?
            #:motion-desig?
+           #:interaction-desig?
            #:desig-prop #:desig-class
            #:desig-timestamp #:desig-description
            #:effective-designator #:desig-value
