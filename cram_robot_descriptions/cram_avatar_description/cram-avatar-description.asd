@@ -1,6 +1,4 @@
-;;;
-;;; Copyright (c) 2017, Gayane Kazhoyan <kazhoyan@cs.uni-bremen.de>
-;;;                     Arthur Niedzwiecki <niedzwiecki@uni-bremen.de>
+;;; Copyright (c) 2023, Mona Abdel-Keream <abdelker@uni-bremen.de>
 ;;; All rights reserved.
 ;;;
 ;;; Redistribution and use in source and binary forms, with or without
@@ -28,45 +26,22 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(defsystem cram-bullet-world-tutorial
-  :depends-on (roslisp-utilities ; for ros-init-function
+(defsystem cram-avatar-description
+  :author "Mona Abdel-Keream"
+  :license "BSD"
 
-               cl-transforms
-               cl-transforms-stamped
-               cl-tf
-               cram-tf
-
-               cram-language
-               cram-executive
+  :depends-on (cram-prolog
                cram-designators
-               cram-prolog
-               cram-projection
-               cram-occasions-events
-
-               cram-common-failures
-
-               cram-physics-utils ; for reading "package://" paths
-               cl-bullet ; for handling BOUNDING-BOX datastructures
-               cram-bullet-reasoning
-               cram-bullet-reasoning-belief-state
-               cram-bullet-reasoning-utilities
-
-               cram-location-costmap
-               cram-btr-visibility-costmap
-               ;; cram-semantic-map-costmap
-               cram-robot-pose-gaussian-costmap
-               cram-occupancy-grid-costmap
-               cram-btr-spatial-relations-costmap
-
-               cram-urdf-projection ; for projection process modules
-               cram-mobile-pick-place-plans
-               cram-pr2-description
-               cram-object-knowledge
-               cram-avatar-description)
-
+               cram-robot-interfaces
+               cram-location-costmap ; to specify robot-specific costmap metadata
+               cl-transforms-stamped
+               cl-urdf
+               roslisp
+               roslisp-utilities)
   :components
   ((:module "src"
     :components
     ((:file "package")
-     (:file "setup" :depends-on ("package"))
-     (:file "tutorial" :depends-on ("package"))))))
+     (:file "avatar-knowledge" :depends-on ("package"))
+     ;;(:file "arm-kinematics" :depends-on ("package"))
+     ))))
