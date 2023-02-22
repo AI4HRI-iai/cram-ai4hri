@@ -62,11 +62,12 @@
                cram-mobile-pick-place-plans
                cram-pr2-description
                cram-object-knowledge
-               cram-avatar-description)
+               cram-avatar-description
+               cram-hsrb-description)
 
   :components
   ((:module "src"
     :components
     ((:file "package")
      (:file "setup" :depends-on ("package"))
-     (:file "tutorial" :depends-on ("package"))))))
+     (:file "tutorial-avatar" :depends-on ("package"))))))

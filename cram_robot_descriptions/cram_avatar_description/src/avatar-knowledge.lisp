@@ -41,13 +41,13 @@
                               robot-neck-tilt-joint-forward-facing-axis-sign
                               robot-joint-states)
 
-  (<- (robot-odom-frame :avatar "root"))
-  (<- (robot-base-frame :avatar "root_to_pelvis_yaw"))
+  (<- (robot-odom-frame :avatar "odom"))
+  (<- (robot-base-frame :avatar "root"))
   (<- (robot-base-link :avatar "root"))
   (<- (robot-torso-link-joint :avatar "spine_03" "spine_03_to_spine_04_yaw"))
 
-  (<- (robot-neck-links :avatar "neck_01" "neck_02"))
-  (<- (robot-neck-joints :avatar "spine_05_to_neck_01" "neck_01_to_neck_02"))
+  (<- (robot-neck-links :avatar   "neck_02" "neck_01" ))
+  (<- (robot-neck-joints :avatar "neck_02_to_head_yaw" "neck_01_to_neck_02" ))
 
   (<- (robot-neck-pan-joint-forward-facing-axis-sign :avatar
                                                      cl-transforms:x +1))
