@@ -44,7 +44,7 @@
   (<- (robot-odom-frame :avatar "odom"))
   (<- (robot-base-frame :avatar "root"))
   (<- (robot-base-link :avatar "root"))
-  (<- (robot-torso-link-joint :avatar "spine_03" "spine_03_to_spine_04_yaw"))
+  (<- (robot-torso-link-joint :avatar "spine_04_yaw" "spine_04_yaw_to_spine_04_pitch"))
 
   (<- (robot-neck-links :avatar   "neck_02" "neck_01" ))
   (<- (robot-neck-joints :avatar "neck_02_to_head_yaw" "neck_01_to_neck_02" ))
@@ -55,7 +55,13 @@
                                                       cl-transforms:x -1))
 
   (<- (robot-joint-states :avatar :neck ?_ :forward ((?pan_joint 0.0) (?tilt_joint 0.0)))
-    (robot-neck-joints :avatar ?pan_joint ?tilt_joint)))
+    (robot-neck-joints :avatar ?pan_joint ?tilt_joint))
+  
+  (<- (robot-joint-states :avatar :body :sitting
+                           ( "thigh_r_to_calf_r_yaw" 1.9652919379395388d0)
+                           ))
+    
+    )
 
 
 
