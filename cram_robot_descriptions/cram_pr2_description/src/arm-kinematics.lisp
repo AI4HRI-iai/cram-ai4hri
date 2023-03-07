@@ -335,5 +335,21 @@
                            ("r_elbow_flex_joint" -1.6859729116108224d0)
                            ("r_forearm_roll_joint" -27.72481374424779d0)
                            ("r_wrist_flex_joint" -0.10621948550701799d0)
-                           ("r_wrist_roll_joint" 7.662671673625887d0)))))
+                           ("r_wrist_roll_joint" 7.662671673625887d0))))
 
+  (<- (robot-joint-states :pr2 :arm :right :wave
+                          (("r_shoulder_pan_joint" -1.712587449591307d0)
+                           ("r_shoulder_lift_joint" -0.2567290370386635d0)
+                           ("r_upper_arm_roll_joint" 0.0d0)
+                           ("r_elbow_flex_joint" -2.1221670650093913d0)
+                           ("r_forearm_roll_joint" 1.7663253481913623d0)
+                           ("r_wrist_flex_joint" -0.07942669250968948d0)
+                           ("r_wrist_roll_joint" 0.05106258161229582d0))))
+  (<- (robot-joint-states :pr2 :arm :left :wave
+                          (("l_shoulder_pan_joint" 1.9652919379395388d0)
+                           ("l_shoulder_lift_joint" -0.26499816732737785d0)
+                           ("l_upper_arm_roll_joint" 0.0d0)
+                           ("l_elbow_flex_joint" -2.1224566064321584d0)
+                           ("l_forearm_roll_joint" 16.99646118944817d0)
+                           ("l_wrist_flex_joint" -0.07350789589924167d0)
+                           ("l_wrist_roll_joint" 0.0)))))
