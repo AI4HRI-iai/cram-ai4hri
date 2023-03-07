@@ -1,8 +1,8 @@
 # This rosinstall file is used to build docker images w/o an ssh-key setup
 - git:
     local-name: cram
-    uri: http://github.com/cram2/cram.git
-    version: devel
+    uri: http://github.com/artnie/cram.git
+    version: hackathon
 - git:
     local-name: roslisp_common
     uri: http://github.com/ros/roslisp_common.git
