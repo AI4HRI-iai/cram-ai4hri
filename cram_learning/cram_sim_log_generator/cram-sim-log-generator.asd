@@ -8,7 +8,10 @@
                :cram-pr2-pick-place-demo
                :cram-urdf-projection
                :cram-cloud-logger
-               :cram-utilities)
+               :cram-utilities
+               :world_control_msgs-msg
+               :world_control_msgs-srv
+               :pr2-unreal-pm)
   :components
   ((:module "src"
     :components
