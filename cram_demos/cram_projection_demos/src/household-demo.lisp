@@ -205,6 +205,60 @@
   ;;  (ccl::export-belief-state-to-owl "ease_milestone_2018_belief.owl"))
   (sb-ext:gc :full t))
 
+(defun dream (&key (object-list '(:bowl :breakfast-cereal :milk :cup :spoon))
+                         varied-kitchen)
+
+  (urdf-proj:with-simulated-robot
+    (if varied-kitchen
+        (btr-belief:vary-kitchen-urdf *furniture-offsets-offset-kitchen*)
+        (btr-belief:vary-kitchen-urdf *furniture-offsets-original-kitchen*))
+    (if (> (cl-transforms:x
+            (cl-transforms:origin
+             (btr:pose
+              (btr:rigid-body (btr:get-environment-object)
+                              :|IAI-KITCHEN.fridge_area|))))
+           0)
+        ;; if the fridge is in front of robot, current kitchen is original
+        (when varied-kitchen
+          (setf btr:*current-bullet-world* (make-instance 'btr:bt-reasoning-world))
+          (btr-belief:spawn-world))
+        ;; if the fridge is behind the robot, current kitchen is varied
+        (unless varied-kitchen
+          (setf btr:*current-bullet-world* (make-instance 'btr:bt-reasoning-world))
+          (btr-belief:spawn-world)))
+    (initialize)
+    (setf btr:*visibility-threshold* 0.7)
+    (when cram-projection:*projection-environment*
+      (spawn-objects-on-fixed-spots
+       :object-types object-list
+       :spawning-poses-relative *demo-object-spawning-poses*))
+    (park-robot)
+
+    (exe:perform
+     (desig:an action
+                 (type transporting)
+                 (object (desig:an object
+                                   (type :milk)
+                                   (location (desig:a location
+                                                      (in (desig:an object
+                                                                    (type fridge)
+                                                                    (urdf-name iai-fridge-door)
+                                                                    (owl-name "drawer_fridge_door_open")
+                                                                    (part-of :iai-kitchen)
+                                                                    (level bottommost)))))
+                                   ))
+                 ;; (context table-setting)
+
+                 (target (desig:a location
+                                  (on (desig:an object
+                                                (type counter-top)
+                                                (urdf-name dining-area-jokkmokk-table-main)
+                                                (part-of :iai-kitchen)))
+                                                (for (desig:an object (type :milk)))
+                                                (range 0.1)
+                                                (side left)
+                                                ))))
+   ))
 
 (defun household-demo (&key (object-list '(:bowl :breakfast-cereal :milk :cup :spoon))
                          varied-kitchen)

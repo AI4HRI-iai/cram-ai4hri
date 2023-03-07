@@ -76,6 +76,10 @@
                cram-kukabot-description
                cram-tiago-description
                ;; cram-hsrb-description
+
+               ;; cram-urobosim
+               ;; cram-pr2-unreal-process-modules
+               ;; cram-cloud-logger
                )
   :components
   ((:module "src"
