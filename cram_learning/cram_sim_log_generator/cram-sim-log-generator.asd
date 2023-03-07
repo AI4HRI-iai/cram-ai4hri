@@ -11,7 +11,7 @@
                :cram-utilities
                :world_control_msgs-msg
                :world_control_msgs-srv
-               :pr2-unreal-pm)
+               :pr2-unreal-pms)
   :components
   ((:module "src"
     :components
