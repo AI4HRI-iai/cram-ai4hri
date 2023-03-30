@@ -32,8 +32,10 @@
   :license "BSD"
 
   :depends-on (roslisp-utilities ; for ros-init-function
+               cram-simple-actionlib-client
                cram-cloud-logger
-               cram-pr2-pick-place-demo)
+               cram-pr2-pick-place-demo
+               rasawrapper_msgs-msg)
 
   :components
   ((:module "src"

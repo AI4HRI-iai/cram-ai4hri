@@ -1,3 +1,32 @@
+;;;
+;;; Copyright (c) 2023, Arthur Niedzwiecki <aniedz@cs.uni-bremen.de>
+;;; All rights reserved.
+;;;
+;;; Redistribution and use in source and binary forms, with or without
+;;; modification, are permitted provided that the following conditions are met:
+;;;
+;;;     * Redistributions of source code must retain the above copyright
+;;;       notice, this list of conditions and the following disclaimer.
+;;;     * Redistributions in binary form must reproduce the above copyright
+;;;       notice, this list of conditions and the following disclaimer in the
+;;;       documentation and/or other materials provided with the distribution.
+;;;     * Neither the name of the Intelligent Autonomous Systems Group/
+;;;       Technische Universitaet Muenchen nor the names of its contributors
+;;;       may be used to endorse or promote products derived from this software
+;;;       without specific prior written permission.
+;;;
+;;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+;;; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+;;; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+;;; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+;;; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+;;; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+;;; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+;;; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+;;; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+;;; POSSIBILITY OF SUCH DAMAGE.
+
 (in-package :demo)
 
 (defparameter *objects-list* '(:bowl :spoon :cup :milk :breakfast-cereal))
@@ -5,102 +34,53 @@
 (defparameter *dialog-fluent* (cpl:make-fluent :name :dialog-fluent :value nil))
 (defparameter *enable-logging* NIL)
 
-
-
-;; (defun make-blackboard-action-client ()
-;;   (actionlib-client:make-simple-action-client
-;; https://github.com/felixput/ease-hri-integration-demo/blob/c646bddc91d8454208111d63a2bc7f596747c231/rasawrapper/scripts/rasawrapper.py#L63
-;;    'dm
-;;    "giskard/command" "giskard_msgs/MoveAction"
-;;    120))
-
-;; (roslisp-utilities:register-ros-init-function make-giskard-action-client)
-
-;; (defun call-action (&key action-goal action-timeout check-goal-function)
-;;   (declare (type giskard_msgs-msg:movegoal action-goal)
-;;            (type (or number null) action-timeout)
-;;            (type (or function null) check-goal-function))
-
-;;   ;; check if the goal has already been reached
-;;   (when (and check-goal-function
-;;              (not (funcall check-goal-function nil nil)))
-;;     (roslisp:ros-warn (giskard action-client)
-;;                       "Giskard action goal already reached.")
-;;     (return-from call-action))
-
-;;   ;; call the actionlib action
-;;   (multiple-value-bind (result status)
-;;       (actionlib-client:call-simple-action-client
-;;        'giskard-action
-;;        :action-goal action-goal
-;;        :action-timeout action-timeout)
-
-;;     ;; print a debug statement if the status is unexpected
-;;     (case status
-;;       (:preempted
-;;        (roslisp:ros-warn (giskard action-client)
-;;                          "Giskard action preempted.~%Result: ~a" result))
-;;       (:timeout
-;;        (roslisp:ros-warn (giskard action-client)
-;;                          "Giskard action timed out."))
-;;       (:aborted
-;;        (roslisp:ros-warn (giskard cartesian)
-;;                          "Giskard action aborted.~%Result: ~a" result)))
-
-;;     (when (and result
-;;                (member (roslisp:symbol-code
-;;                         'giskard_msgs-msg:moveresult
-;;                         :unknown_group)
-;;                        (map 'list #'identity
-;;                             (roslisp:msg-slot-value
-;;                              result
-;;                              :error_codes))))
-;;       (full-update-collision-scene))
-
-;;     ;; check if the goal was reached, if not, throw a failure
-;;     (when check-goal-function
-;;       (let ((failure (funcall check-goal-function result status)))
-;;         (when failure
-;;           (roslisp:ros-warn (giskard action-client)
-;;                             "Giskard action goal was not reached.")
-;;           (cpl:fail failure))))
-
-;;     ;; this is only used by HPN:
-;;     ;; return the joint state, which is our observation
-;;     ;; (joints:full-joint-states-as-hash-table)
-
-;;     ;; return the result and status
-;;     (values result status)))
+;; adjust this ros-name, look for the topic
+(defparameter *speech-action-server-name* "chatterbot/speak")
 
 (defun interaction-demo ()
+  "Entry point of the demo. Listens to the /dialog topic
+ and talks to the rasawrapper action server."
+  ;; reset
   (setf ccl::*is-logging-enabled* *enable-logging*)
   (when *enable-logging* (ccl:start-episode))
   (setf *dialog-subscriber* nil)
-  (roslisp:with-ros-node ("dialog-listener" :spin t)
-    ;; (unless (eq (roslisp:node-status) :running)
-    ;;   (roslisp-utilities:startup-ros))
+  ;; start subscriber and speech action-client
+  (roslisp:with-ros-node ("dialog-communication" :spin t)
     (initialize)
+    ;; (spawn-objects-on-fixed-spots
+    ;;  :object-types *objects-list*
+    ;;  :spawning-poses-relative *demo-object-spawning-poses*)
+    (make-speech-action-client)
     (setf *dialog-subscriber*
           (roslisp:subscribe "dialog" "std_msgs/String" #'dialog-listener-callback)))
+  ;; end episode
   (when *enable-logging* (ccl:stop-episode)))
 
+
 (defun dialog-listener-callback (message)
+  "Passes the message from /dialog as list of keywords to #'task-selector."
   (setf *dialog-fluent* message)
   (urdf-proj:with-simulated-robot
-    (apply #'greet (message->dialog-parameters message))))
+    (apply #'task-selector (message->dialog-parameters message))))
+
 
 (defun message->dialog-parameters (message)
+  "Splits std_msg/String space-separated into list of keywords."
   (roslisp:with-fields (data) message
     (remove :|| (mapcar (lambda (word)
                           (intern (string-upcase word) :keyword))
                         (split-sequence:split-sequence '#\space data)))))
 
-(defun greet (&rest params)
+
+(defun task-selector (&rest params)
+  "Executes task based on the list of given params."
   (print (format t "Received: ~a" params))
   (case (first params)
+    ;; "waving right _"
     (:WAVING (if (member (second params) '(:right :left))
-                 (greeting :gripper (second params))
-                 (greeting)))
+                 (waving :arm (second params))
+                 (waving)))
+    ;; "pointing _ <object-name>"
     (:POINTING (if (member (third params)
                            (mapcar #'btr:name
                                    (btr:objects btr:*current-bullet-world*)))
@@ -109,13 +89,21 @@
                                   (third params)
                                   (mapcar #'btr:name
                                           (btr:objects btr:*current-bullet-world*))))))
+    ;; "greeting"
+    (:GREETING (greeting :action-value "Greet"))
+    ;; "left"
+    (:LEFT "For backwards compatibility" (waving :arm :left))
+    ;; "right"
+    (:RIGHT "For backwards compatibility" (waving :arm :RIGHT))
+    ;; "nothing"
     (:NOTHING (print "Nothing to be done"))
     (otherwise (print "No data received"))))
 
-(defun greeting (&key (gripper :right) ;; right or left
-                      (day-time "morning"))
-  "hand is left or right"
-  (if (eq gripper :left)
+
+(defun waving (&key (arm :right)
+                 (day-time "morning"))
+  "Move he robots left or right arm to wave."
+  (if (eq arm :left)
       (exe:perform
        (desig:an action
                  (type positioning-arm)
@@ -135,17 +123,46 @@
 (defun looking-at (&key object-name)
   (print (format T "Pointing at ~a" object-name))
   (print "Not implemented yet."))
-  
 
-;; (defun greet (message)
-;;   (urdf-proj:with-simulated-robot
-;;       ;; (split-sequence:split-sequence '#\space data)
-;;       (let ((arm (if (string= data "right")
-;;                      :right
-;;                      (if (string= data "left")
-;;                          :left
-;;                          nil))))
-;;         (greeting :gripper arm)))))
+(defun greeting (&key action-value)
+  (call-speech-action :action-goal (make-speech-goal action-value)))
 
 
+;;; RASA Action client
+;; https://github.com/felixput/ease-hri-integration-demo/tree/main/rasawrapper/scripts/rasawrapper.py
 
+(defun make-speech-action-client ()
+  (actionlib-client:make-simple-action-client
+   'speech-action
+   *speech-action-server-name*
+   "rasawrapper_msgs/SpeechRequestAction"
+   120))
+
+(defun make-speech-goal (&optional (action-value "Greet"))
+  (roslisp:make-message
+   'rasawrapper_msgs-msg:SpeechRequestGoal
+   :features (roslisp:make-message 'diagnostic_msgs-msg:keyvalue
+                                   :key "action"
+                                   :value action-value)))
+
+(defun call-speech-action (&key action-goal action-timeout)
+  (declare (type rasawrapper_msgs-msg:speechrequestgoal action-goal)
+           (type (or number null) action-timeout))
+  ;; call the actionlib action
+  (multiple-value-bind (result status)
+      (actionlib-client:call-simple-action-client
+       'speech-action
+       :action-goal action-goal
+       :action-timeout action-timeout)
+    ;; print a debug statement if the status is unexpected
+    (case status
+      (:preempted
+       (roslisp:ros-warn (rasaspeech action-client)
+                         "Action preempted.~%Result: ~a" result))
+      (:timeout
+       (roslisp:ros-warn (rasaspeech action-client)
+                         "Action timed out."))
+      (:aborted
+       (roslisp:ros-warn (rasaspeech action-client)
+                         "Action aborted.~%Result: ~a" result)))
+    (values result status)))
