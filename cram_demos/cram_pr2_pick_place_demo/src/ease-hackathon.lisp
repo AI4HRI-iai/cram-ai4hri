@@ -3,15 +3,19 @@
 (defparameter *objects-list* '(:bowl :spoon :cup :milk :breakfast-cereal))
 (defparameter *dialog-subscriber* nil)
 (defparameter *dialog-fluent* (cpl:make-fluent :name :dialog-fluent :value nil))
+(defparameter *enable-logging* NIL)
 
 (defun interaction-demo ()
+  (setf ccl::*is-logging-enabled* *enable-logging*)
+  (when *enable-logging* (ccl:start-episode))
   (setf *dialog-subscriber* nil)
   (roslisp:with-ros-node ("dialog-listener" :spin t)
     ;; (unless (eq (roslisp:node-status) :running)
     ;;   (roslisp-utilities:startup-ros))
     (initialize)
     (setf *dialog-subscriber*
-          (roslisp:subscribe "dialog" "std_msgs/String" #'dialog-listener-callback))))
+          (roslisp:subscribe "dialog" "std_msgs/String" #'dialog-listener-callback)))
+  (when *enable-logging* (ccl:stop-episode)))
 
 (defun dialog-listener-callback (message)
   (setf *dialog-fluent* message)
