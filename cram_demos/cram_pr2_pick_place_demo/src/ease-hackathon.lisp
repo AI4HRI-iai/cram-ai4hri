@@ -5,6 +5,73 @@
 (defparameter *dialog-fluent* (cpl:make-fluent :name :dialog-fluent :value nil))
 (defparameter *enable-logging* NIL)
 
+
+
+;; (defun make-blackboard-action-client ()
+;;   (actionlib-client:make-simple-action-client
+;; https://github.com/felixput/ease-hri-integration-demo/blob/c646bddc91d8454208111d63a2bc7f596747c231/rasawrapper/scripts/rasawrapper.py#L63
+;;    'dm
+;;    "giskard/command" "giskard_msgs/MoveAction"
+;;    120))
+
+;; (roslisp-utilities:register-ros-init-function make-giskard-action-client)
+
+;; (defun call-action (&key action-goal action-timeout check-goal-function)
+;;   (declare (type giskard_msgs-msg:movegoal action-goal)
+;;            (type (or number null) action-timeout)
+;;            (type (or function null) check-goal-function))
+
+;;   ;; check if the goal has already been reached
+;;   (when (and check-goal-function
+;;              (not (funcall check-goal-function nil nil)))
+;;     (roslisp:ros-warn (giskard action-client)
+;;                       "Giskard action goal already reached.")
+;;     (return-from call-action))
+
+;;   ;; call the actionlib action
+;;   (multiple-value-bind (result status)
+;;       (actionlib-client:call-simple-action-client
+;;        'giskard-action
+;;        :action-goal action-goal
+;;        :action-timeout action-timeout)
+
+;;     ;; print a debug statement if the status is unexpected
+;;     (case status
+;;       (:preempted
+;;        (roslisp:ros-warn (giskard action-client)
+;;                          "Giskard action preempted.~%Result: ~a" result))
+;;       (:timeout
+;;        (roslisp:ros-warn (giskard action-client)
+;;                          "Giskard action timed out."))
+;;       (:aborted
+;;        (roslisp:ros-warn (giskard cartesian)
+;;                          "Giskard action aborted.~%Result: ~a" result)))
+
+;;     (when (and result
+;;                (member (roslisp:symbol-code
+;;                         'giskard_msgs-msg:moveresult
+;;                         :unknown_group)
+;;                        (map 'list #'identity
+;;                             (roslisp:msg-slot-value
+;;                              result
+;;                              :error_codes))))
+;;       (full-update-collision-scene))
+
+;;     ;; check if the goal was reached, if not, throw a failure
+;;     (when check-goal-function
+;;       (let ((failure (funcall check-goal-function result status)))
+;;         (when failure
+;;           (roslisp:ros-warn (giskard action-client)
+;;                             "Giskard action goal was not reached.")
+;;           (cpl:fail failure))))
+
+;;     ;; this is only used by HPN:
+;;     ;; return the joint state, which is our observation
+;;     ;; (joints:full-joint-states-as-hash-table)
+
+;;     ;; return the result and status
+;;     (values result status)))
+
 (defun interaction-demo ()
   (setf ccl::*is-logging-enabled* *enable-logging*)
   (when *enable-logging* (ccl:start-episode))
