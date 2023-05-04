@@ -1,7 +1,7 @@
 <package format="2">
-  <name>cram_bullet_world_tutorial_pepper</name>
+  <name>cram_bullet_world_tutorial_avatar</name>
   <version>0.7.0</version>
-  <description>tutorial code for pepper in the cram bullet world.</description>
+  <description>tutorial code for avatar in the cram bullet world.</description>
   <author>Mona Abdel-Keream</author>
   <maintainer email="abdelker@cs.uni-bremen.de">Mona Abdel-Keream</maintainer>
   <license>BSD</license>

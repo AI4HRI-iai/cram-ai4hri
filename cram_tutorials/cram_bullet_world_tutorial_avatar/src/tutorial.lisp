@@ -27,7 +27,7 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :btw-tut-pepper)
+(in-package :btw-tut-avatar)
 
 (defun get-kitchen-urdf ()
   (slot-value

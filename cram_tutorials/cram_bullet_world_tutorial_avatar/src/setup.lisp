@@ -11,8 +11,8 @@
 ;;;       notice, this list of conditions and the following disclaimer in the
 ;;;       documentation and/or other materials provided with the distribution.
 ;;;     * Neither the name of the Intelligent Autonomous Systems Group/
-;;;       Technische Universitaet Muenchen nor the names of its contributors 
-;;;       may be used to endorse or promote products derived from this software 
+;;;       Technische Universitaet Muenchen nor the names of its contributors
+;;;       may be used to endorse or promote products derived from this software
 ;;;       without specific prior written permission.
 ;;;
 ;;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -27,45 +27,13 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(defsystem cram-bullet-world-tutorial-pepper
-  :depends-on (roslisp-utilities ; for ros-init-function
+(in-package :btw-tut-avatar)
 
-               cl-transforms
-               cl-transforms-stamped
-               cl-tf
-               cram-tf
+;; roslaunch cram_bullet_world_tutorial_avatar world.launch
 
-               cram-language
-               cram-executive
-               cram-designators
-               cram-prolog
-               cram-projection
-               cram-occasions-events
+(defun init-projection ()
+  (cram-occasions-events:clear-belief)
+  (setf cram-tf:*tf-default-timeout* 2.0)
+  (setf prolog:*break-on-lisp-errors* t))
 
-               cram-common-failures
-
-               cram-physics-utils ; for reading "package://" paths
-               cl-bullet ; for handling BOUNDING-BOX datastructures
-               cram-bullet-reasoning
-               cram-bullet-reasoning-belief-state
-               cram-bullet-reasoning-utilities
-
-               cram-location-costmap
-               cram-btr-visibility-costmap
-               ;; cram-semantic-map-costmap
-               cram-robot-pose-gaussian-costmap
-               cram-occupancy-grid-costmap
-               cram-btr-spatial-relations-costmap
-
-               cram-urdf-projection ; for projection process modules
-               cram-mobile-pick-place-plans
-               cram-pr2-description
-               cram-pepper-description
-               cram-object-knowledge)
-
-  :components
-  ((:module "src"
-    :components
-    ((:file "package")
-     (:file "setup" :depends-on ("package"))
-     (:file "tutorial" :depends-on ("package"))))))
+(roslisp-utilities:register-ros-init-function init-projection)
