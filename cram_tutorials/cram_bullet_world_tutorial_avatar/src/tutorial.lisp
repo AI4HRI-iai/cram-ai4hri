@@ -29,6 +29,25 @@
 
 (in-package :btw-tut-avatar)
 
+
+(defun spawn-other-avatar ()
+;  (let ((?robot (parse-keyword agent-name))
+;        ;(robot-description (format nil "~a_description" (string-downcase (string agent-name)))))
+;        (robot-description (format nil "~a_description" agent-name)))
+;       (princ robot-description) (terpri) (princ ?robot)
+      (let ((robot-urdf
+                         (cl-urdf:parse-urdf
+                          (roslisp:get-param "avatar_description"))))
+       (prolog:prolog
+        `(and (btr:bullet-world ?world)
+              (assert (btr:object ?world :urdf :avatar ((0.5 1 0) (0 0 0 1)) :urdf ,robot-urdf))
+              (-> (rob-int:robot-joint-states :avatar :arm :left :park ?left-joint-states)
+                  (assert (btr:joint-state ?world :avatar ?left-joint-states))
+                  (true))
+              (-> (rob-int:robot-joint-states :avatar :arm :right :park ?right-joint-states)
+                  (assert (btr:joint-state ?world :avatar ?right-joint-states))
+                  (true))))))
+
 (defun get-kitchen-urdf ()
   (slot-value
    (btr:get-environment-object)
