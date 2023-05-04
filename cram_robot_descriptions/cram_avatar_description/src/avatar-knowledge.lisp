@@ -32,26 +32,30 @@
   (cl-transforms:make-3d-vector 10.0 0.0 1.5))
 
 (def-fact-group avatar-metadata (
-                              robot-odom-frame
-                              robot-base-frame
-                              robot-base-link
-                              camera-frame
-                              robot-torso-link-joint
-                              robot-neck-links robot-neck-joints
-                              robot-neck-pan-joint-forward-facing-axis-sign
-                              robot-neck-tilt-joint-forward-facing-axis-sign
-                              robot-joint-states)
+                                 robot-odom-frame
+                                 robot-base-frame
+                                 robot-base-link
+                                 camera-frame
+                                 camera-minimal-height
+                                 camera-maximal-height
+                                 robot-torso-link-joint
+                                 robot-neck-links robot-neck-joints
+                                 robot-neck-pan-joint-forward-facing-axis-sign
+                                 robot-neck-tilt-joint-forward-facing-axis-sign
+                                 robot-joint-states)
 
   (<- (robot-odom-frame :avatar "odom"))
   (<- (robot-base-frame :avatar "root"))
   (<- (robot-base-link :avatar "root"))
 
   (<- (camera-frame :avatar "head"))
+  (<- (camera-minimal-height :avatar 0.50))
+  (<- (camera-maximal-height :avatar 2.10))
 
   (<- (robot-torso-link-joint :avatar "spine_04_yaw" "spine_04_yaw_to_spine_04_pitch"))
 
-  (<- (robot-neck-links :avatar   "neck_02" "neck_01" ))
-  (<- (robot-neck-joints :avatar "neck_02_to_head_yaw" "neck_01_to_neck_02" ))
+  (<- (robot-neck-links :avatar   "neck_02" "neck_01"))
+  (<- (robot-neck-joints :avatar "neck_02_to_head_yaw" "neck_01_to_neck_02"))
 
   (<- (robot-neck-pan-joint-forward-facing-axis-sign :avatar
                                                      cl-transforms:x +1))
@@ -62,10 +66,10 @@
     (robot-neck-joints :avatar ?pan_joint ?tilt_joint))
   
   (<- (robot-joint-states :avatar :body :sitting
-                           ( "thigh_r_to_calf_r_yaw" 1.9652919379395388d0)
-                           ))
+                           ( "thigh_r_to_calf_r_yaw" 1.9652919379395388d0))))
+                           
     
-    )
+    
 
 
 
