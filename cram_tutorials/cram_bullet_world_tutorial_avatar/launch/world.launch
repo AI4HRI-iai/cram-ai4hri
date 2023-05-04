@@ -1,5 +1,6 @@
 <launch>
   <!-- upload or not upload the pepper description, in case one is already uploaded -->
+  <arg name="with-pepper" default="true" />
   <arg name="upload" default="true" />
 
   <!-- occupancy map -->
@@ -44,9 +45,17 @@
   <include file="$(find pr2_arm_kinematics)/launch/pr2_ik_rarm_node.launch" /-->
   
   <group if="$(arg upload)">
-    <param name="robot_description"
+    <param name="avatar_description"
            command="$(find xacro)/xacro
                     '$(find iai_avatar_description)/avatars/MetaHuman/urdf/avatar_bulletworld.urdf.xacro'"/>
+      <remap from="robot_description" to="avatar_description" />
+  </group>
+
+    <group if="$(arg with-pepper)">
+    <param name="robot_description"
+           command="$(find xacro)/xacro
+                    '$(find pepper_description)/urdf/pepper.urdf'"/>
+     
   </group>
 </launch>
 
