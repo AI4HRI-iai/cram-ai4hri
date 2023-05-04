@@ -27,9 +27,9 @@
 ;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
-(in-package :btw-tut)
+(in-package :btw-tut-pepper)
 
-;; roslaunch cram_bullet_world_tutorial world.launch
+;; roslaunch cram_bullet_world_tutorial_pepper world.launch
 
 (defun init-projection ()
   (cram-occasions-events:clear-belief)

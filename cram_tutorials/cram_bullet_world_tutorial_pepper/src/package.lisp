@@ -29,8 +29,8 @@
 
 (in-package :cl-user)
 
-(defpackage cram-bullet-world-tutorial
-  (:nicknames #:btw-tut)
+(defpackage cram-bullet-world-tutorial-pepper
+  (:nicknames #:btw-tut-pepper)
   (:use #:common-lisp
         #:cram-prolog)
   (:export))
