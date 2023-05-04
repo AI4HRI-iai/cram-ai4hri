@@ -15,3 +15,5 @@ cram_pepper/.vscode/c_cpp_properties.json
 cram_pepper/.vscode/settings.json
 .gitignore
 cram_demos/cram_pepper_dt_demo/.vscode/settings.json
+cram_3d_world/.vscode/c_cpp_properties.json
+cram_3d_world/.vscode/settings.json
