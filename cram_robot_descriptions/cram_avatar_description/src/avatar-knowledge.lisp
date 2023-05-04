@@ -35,6 +35,7 @@
                               robot-odom-frame
                               robot-base-frame
                               robot-base-link
+                              camera-frame
                               robot-torso-link-joint
                               robot-neck-links robot-neck-joints
                               robot-neck-pan-joint-forward-facing-axis-sign
@@ -44,6 +45,9 @@
   (<- (robot-odom-frame :avatar "odom"))
   (<- (robot-base-frame :avatar "root"))
   (<- (robot-base-link :avatar "root"))
+
+  (<- (camera-frame :avatar "head"))
+
   (<- (robot-torso-link-joint :avatar "spine_04_yaw" "spine_04_yaw_to_spine_04_pitch"))
 
   (<- (robot-neck-links :avatar   "neck_02" "neck_01" ))
