@@ -61,6 +61,7 @@
                cram-mobile-pick-place-plans
                cram-pr2-description
                cram-pepper-description
+               cram-avatar-description
                cram-object-knowledge)
 
   :components

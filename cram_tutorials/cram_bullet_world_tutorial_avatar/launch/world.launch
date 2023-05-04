@@ -46,7 +46,7 @@
   <group if="$(arg upload)">
     <param name="robot_description"
            command="$(find xacro)/xacro
-                    '$(find pepper_description)/urdf/pepper.urdf'"/>
+                    '$(find iai_avatar_description)/avatars/MetaHuman/urdf/avatar_bulletworld.urdf.xacro'"/>
   </group>
 </launch>
 
