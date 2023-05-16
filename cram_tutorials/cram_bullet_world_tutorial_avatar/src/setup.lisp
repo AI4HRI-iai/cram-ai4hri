@@ -36,4 +36,52 @@
   (setf cram-tf:*tf-default-timeout* 2.0)
   (setf prolog:*break-on-lisp-errors* t))
 
+
+(defun init-new-belief ()
+  (cram-occupancy-grid-costmap::init-occupancy-grid-costmap)
+  (cram-bullet-reasoning-belief-state::ros-time-init)
+  (cram-location-costmap::location-costmap-vis-init)
+  (cram-tf::init-tf))
+
+(defun spawn-world ()
+  (prolog:prolog '(and (btr:bullet-world ?world)
+                       (btr:debug-window ?world)))
+  (prolog:prolog '(and (btr:bullet-world ?world)
+                   (assert (btr:object ?world :static-plane :floor ((0 0 0) (0 0 0 1))
+                                       :normal (0 0 1) :constant 0)))) 
+  (let ((adream-urdf 
+         (cl-urdf:parse-urdf 
+          (roslisp:get-param "adream_description"))))
+   (prolog:prolog
+    `(and (btr:bullet-world ?world)
+          (assert (btr:object ?world :urdf :adream ((0 0 0) (0 0 0 1))
+                              :urdf ,adream-urdf
+                              :collision-group :static-filter
+                              :collision-mask (:default-filter :character-filter)
+                              :compound T))))))
+
+(defun spawn-avatar ()
+ (let ((robot-urdf
+                    (cl-urdf:parse-urdf
+                     (roslisp:get-param "robot_description"))))
+      (prolog:prolog
+       `(and (btr:bullet-world ?world)
+             (cram-robot-interfaces:robot ?robot)
+             (assert (btr:object ?world :urdf ?robot ((0 0 0) (0 0 0 1)) :urdf ,robot-urdf))
+             (-> (rob-int:robot-joint-states ?robot :arm :left :park ?left-joint-states)
+                 (assert (btr:joint-state ?world ?robot ?left-joint-states))
+                 (true))
+             (-> (rob-int:robot-joint-states ?robot :arm :right :park ?right-joint-states)
+                 (assert (btr:joint-state ?world ?robot ?right-joint-states))
+                 (true))))))   
+
+
+(defun respawn-everything ()
+ (roslisp:start-ros-node "bullet_world")
+ ;;(init-projection)
+ (init-new-belief)
+ (spawn-world)
+ (spawn-avatar))                                        
+  
+
 (roslisp-utilities:register-ros-init-function init-projection)
