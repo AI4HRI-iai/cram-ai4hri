@@ -2,6 +2,11 @@
   <!-- upload or not upload the pepper description, in case one is already uploaded -->
   <arg name="with-pepper" default="true" />
   <arg name="upload" default="true" />
+  <arg name="use_gui" default="true" />
+
+  <node name="rviz" pkg="rviz" type="rviz"
+      args="-d $(find iai_avatar_description)/launch/rviz/config.rviz"
+      required="true" />
 
   <!-- occupancy map -->
   <include file="$(find iai_maps)/launch/map.launch" />
@@ -45,17 +50,44 @@
   <include file="$(find pr2_arm_kinematics)/launch/pr2_ik_rarm_node.launch" /-->
   
   <group if="$(arg upload)">
-    <param name="avatar_description"
-           command="$(find xacro)/xacro
-                    '$(find iai_avatar_description)/avatars/MetaHuman/urdf/avatar_bulletworld.urdf.xacro'"/>
-      <remap from="robot_description" to="avatar_description" />
+    <param name="robot_description"
+      command="$(find xacro)/xacro
+                    '$(find iai_avatar_description)/avatars/MetaHuman/urdf/avatar_bulletworld.urdf.xacro'" />
+    <node name="avatar_robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+      <!-- remap from="robot_description" to="avatar_description"/-->
+      <param name="tf_prefix" value="" />
+      <param name="publish_frequency" value="25" />
+      <param name="ignore_timestamp" value="true" />
+    </node>
+
+    <node pkg="joint_state_publisher" type="joint_state_publisher"
+        name="avatar_joint_state_publisher" output="screen">
+    <!-- <remap from="robot_description" to="avatar_description"/> -->
+    <param name="rate" value="25"/>
+    <param name="use_gui" value="False"/>
+  </node>
   </group>
 
-    <group if="$(arg with-pepper)">
-    <param name="robot_description"
-           command="$(find xacro)/xacro
-                    '$(find pepper_description)/urdf/pepper.urdf'"/>
-     
+  <group if="$(arg with-pepper)">
+    <param name="pepper_description"
+      command="$(find xacro)/xacro
+                    '$(find pepper_description)/urdf/pepper.urdf'" />
+
+    <node name="pepper_robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+      <remap from="robot_description" to="pepper_description" />
+      <param name="tf_prefix" value="" />
+      <param name="publish_frequency" value="25" />
+      <param name="ignore_timestamp" value="true" />
+    </node>
+
+    <node pkg="joint_state_publisher" type="joint_state_publisher"
+        name="pepper_joint_state_publisher" output="screen">
+    <remap from="robot_description" to="pepper_description"/>
+    <param name="rate" value="25"/>
+    <param name="use_gui" value="False"/>
+  </node>
+
+
   </group>
 </launch>
 
