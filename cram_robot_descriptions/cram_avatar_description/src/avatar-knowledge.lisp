@@ -46,11 +46,11 @@
 
   (<- (robot-odom-frame :avatar "odom"))
   (<- (robot-base-frame :avatar "root"))
-  (<- (robot-base-link :avatar "root"))
+  ;;(<- (robot-base-link :avatar "root"))
 
-  (<- (camera-frame :avatar "head"))
-  (<- (camera-minimal-height :avatar 0.50))
-  (<- (camera-maximal-height :avatar 2.10))
+  (<- (camera-frame :avatar "Camera_frame_avatar"))
+  (<- (camera-minimal-height :avatar 1.00))
+  (<- (camera-maximal-height :avatar 1.10))
 
   (<- (robot-torso-link-joint :avatar "spine_04_yaw" "spine_04_yaw_to_spine_04_pitch"))
 
@@ -73,17 +73,40 @@
 
 
 
-(def-fact-group location-costmap-metadata (costmap:costmap-padding
-                                           costmap:costmap-manipulation-padding
-                                           costmap:costmap-in-reach-distance
-                                           costmap:costmap-reach-minimal-distance
-                                           costmap:orientation-samples
-                                           costmap:orientation-sample-step
-                                           costmap:visibility-costmap-size)
-  (<- (costmap:costmap-padding :avatar 0.3))
-  (<- (costmap:costmap-manipulation-padding :avatar 0.4))
-  (<- (costmap:costmap-in-reach-distance :avatar 1.05))
-  (<- (costmap:costmap-reach-minimal-distance :avatar 0.2))
-  (<- (costmap:orientation-samples :avatar 1))
-  (<- (costmap:orientation-sample-step :avatar 0.3))
-  (<- (costmap:visibility-costmap-size :avatar 2)))
+;; (def-fact-group location-costmap-metadata (costmap:costmap-padding
+;;                                            costmap:costmap-manipulation-padding
+;;                                            costmap:costmap-in-reach-distance
+;;                                            costmap:costmap-reach-minimal-distance
+;;                                            costmap:orientation-samples
+;;                                            costmap:orientation-sample-step
+;;                                            costmap:visibility-costmap-size)
+;;   (<- (costmap:costmap-padding :avatar 0.3))
+;;   (<- (costmap:costmap-manipulation-padding :avatar 0.4))
+;;   (<- (costmap:costmap-in-reach-distance :avatar 1.05))
+;;   (<- (costmap:costmap-reach-minimal-distance :avatar 0.2))
+;;   (<- (costmap:orientation-samples :avatar 1))
+;;   (<- (costmap:orientation-sample-step :avatar 0.3))
+;;   (<- (costmap:visibility-costmap-size :avatar 2)))
+
+; Gaussian distribution configuration
+(def-fact-group location-costmap-metadata ( costmap:costmap-size
+                                            costmap:costmap-origin
+                                            costmap:costmap-resolution
+                                            costmap:orientation-samples
+                                            costmap:orientation-sample-step
+                                            costmap:costmap-padding
+                                            costmap:costmap-manipulation-padding
+                                            costmap:costmap-in-reach-distance
+                                            costmap:costmap-reach-minimal-distance
+                                            costmap:visibility-costmap-size)
+    (<- (costmap:costmap-size 12 12))
+    (<- (costmap:costmap-origin -6 -6))
+    (<- (costmap:costmap-resolution 0.04))
+ 
+    (<- (costmap:costmap-padding 0.3))
+    (<- (costmap:costmap-manipulation-padding 0.4))
+    (<- (costmap:costmap-in-reach-distance 0.7))
+    (<- (costmap:costmap-reach-minimal-distance 0.2))
+    (<- (costmap:visibility-costmap-size :pepper 2))
+    (<- (costmap:orientation-samples 2))
+    (<- (costmap:orientation-sample-step 0.1)))
