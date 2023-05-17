@@ -43,7 +43,7 @@
   (cram-location-costmap::location-costmap-vis-init)
   (cram-tf::init-tf))
 
-(defun spawn-world ()
+(defun spawn-map ()
   (prolog:prolog '(and (btr:bullet-world ?world)
                        (btr:debug-window ?world)))
   (prolog:prolog '(and (btr:bullet-world ?world)
@@ -67,7 +67,7 @@
       (prolog:prolog
        `(and (btr:bullet-world ?world)
              (cram-robot-interfaces:robot ?robot)
-             (assert (btr:object ?world :urdf ?robot ((0 0 0) (0 0 0 1)) :urdf ,robot-urdf))
+             (assert (btr:object ?world :urdf ?robot ((5 6 0) (0 0 1 0)) :urdf ,robot-urdf))
              (-> (rob-int:robot-joint-states ?robot :arm :left :park ?left-joint-states)
                  (assert (btr:joint-state ?world ?robot ?left-joint-states))
                  (true))
@@ -75,13 +75,33 @@
                  (assert (btr:joint-state ?world ?robot ?right-joint-states))
                  (true))))))   
 
+(defun spawn-dt-world ()
+ (add-objects-to-mesh-list)
+;;table-1
+ (prolog:prolog '(and (btr:bullet-world ?world)
+                     (assert (btr:object ?world :mesh table-1 ((4 6 0.7) (0 0 1 1))
+                                         :mass 0.2 :mesh :table)))) 
+ (spawn-boxes))
+ 
+ 
+(defun spawn-boxes ()
+ (mapcar (lambda (i) 
+          (btr:add-object btr:*current-bullet-world* :mesh (read-from-string (format nil "box-b~a" i)) 
+           (cl-transforms:make-pose 
+            (cl-transforms:make-3d-vector 4 (+ (* i 0.5) 5) 0.8) 
+            (cl-transforms:make-quaternion 0 0 1 1))
+           :mass 0.2 :mesh :dt-box)) 
+         '(1 2 3)))
+
+ 
 
 (defun respawn-everything ()
  (roslisp:start-ros-node "bullet_world")
  ;;(init-projection)
  (init-new-belief)
- (spawn-world)
- (spawn-avatar))                                        
+ (spawn-map)
+ (spawn-avatar)
+ (spawn-dt-world))                                        
   
 
 (roslisp-utilities:register-ros-init-function init-projection)
