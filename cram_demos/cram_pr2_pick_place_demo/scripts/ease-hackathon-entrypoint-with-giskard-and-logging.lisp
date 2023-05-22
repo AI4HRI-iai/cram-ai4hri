@@ -1,0 +1,6 @@
+(load (parse-namestring (concatenate 'string (sb-ext:posix-getenv "ROS_ROOT")
+                                     "lisp/scripts/roslisp-sbcl-init")))
+(asdf:load-system "ease-hackathon")
+(asdf:load-system "cram-sim-log-generator")
+(roslisp-utilities:startup-ros)
+(demo:interaction-demo)
