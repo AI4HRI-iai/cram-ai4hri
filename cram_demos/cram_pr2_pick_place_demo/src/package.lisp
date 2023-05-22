@@ -37,5 +37,6 @@
    ;; setup
    ;; #:bla
    ;; demo
+   interaction-demo
    ))
 

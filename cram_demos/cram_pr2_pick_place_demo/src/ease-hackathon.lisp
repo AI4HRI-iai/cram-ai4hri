@@ -31,11 +31,14 @@
 
 (defparameter *objects-list* '(:bowl :spoon :cup :milk :breakfast-cereal))
 (defparameter *dialog-subscriber* nil)
+(defparameter *dialog-topic-name-default* "dialog")
+(defparameter *dialog-topic-name-rosparam-name* "cram_command_topic")
 (defparameter *dialog-fluent* (cpl:make-fluent :name :dialog-fluent :value nil))
 (defparameter *enable-logging* NIL)
 
 ;; adjust this ros-name, look for the topic
 (defparameter *speech-action-server-name* "chatterbot/speak")
+(defparameter *speech-action-server-rosparam-name* "cram_to_speech_server_name")
 
 (defun interaction-demo ()
   "Entry point of the demo. Listens to the /dialog topic
@@ -45,14 +48,37 @@
   (when *enable-logging* (ccl:start-episode))
   (setf *dialog-subscriber* nil)
   ;; start subscriber and speech action-client
-  (roslisp:with-ros-node ("dialog-communication" :spin t)
+  (roslisp:with-ros-node ("cram_communication" :spin t)
     (initialize)
     ;; (spawn-objects-on-fixed-spots
     ;;  :object-types *objects-list*
     ;;  :spawning-poses-relative *demo-object-spawning-poses*)
     (make-speech-action-client)
-    (setf *dialog-subscriber*
-          (roslisp:subscribe "dialog" "std_msgs/String" #'dialog-listener-callback)))
+    (roslisp:ros-info cram-communication "Initializing cram_communication subscriber...")
+    (roslisp:ros-info cram-communication "Fetching command topic name from /~a"
+                      *dialog-topic-name-rosparam-name*)
+    (let ((command-topic (roslisp:get-param *dialog-topic-name-rosparam-name*
+                                            *dialog-topic-name-default*)))
+      (if (string= command-topic *dialog-topic-name-default*)
+        (roslisp:ros-info
+         cram-communication
+         "No name provided at /~a, using default name: ~a"
+         *dialog-topic-name-rosparam-name* command-topic)
+        (roslisp:ros-info
+         cram-communication
+         "Using name ~a from /~a"
+         *dialog-topic-name-rosparam-name* command-topic))
+      (roslisp:ros-info cram-communication
+                        "Test it from the terminal with: rostopic pub ~a std_msgs/String \"data: 'right'\""
+                        command-topic)
+      (roslisp:ros-info cram-communication "Supported commands are:~%~{~a~^~%~}"
+                        '("waving right arm"
+                          "waving left arm"
+                          "right"
+                          "left"
+                          "greeting (requires speech server)"))
+      (setf *dialog-subscriber*
+            (roslisp:subscribe command-topic "std_msgs/String" #'dialog-listener-callback))))
   ;; end episode
   (when *enable-logging* (ccl:stop-episode)))
 
@@ -132,11 +158,27 @@
 ;; https://github.com/felixput/ease-hri-integration-demo/tree/main/rasawrapper/scripts/rasawrapper.py
 
 (defun make-speech-action-client ()
-  (actionlib-client:make-simple-action-client
-   'speech-action
-   *speech-action-server-name*
-   "rasawrapper_msgs/SpeechRequestAction"
-   120))
+  (roslisp:ros-info speech-client "Initializing speech client...")
+  (roslisp:ros-info speech-client "Fetching rosparam /~a" *speech-action-server-rosparam-name*)
+  (let ((speech-action-name (roslisp:get-param *speech-action-server-rosparam-name*
+                                               *speech-action-server-name*)))
+    (if (string= speech-action-name *speech-action-server-name*)
+        (roslisp:ros-info
+         speech-client
+         "No name provided at /~a using default name ~a"
+         *speech-action-server-rosparam-name*
+         *speech-action-server-name*)
+        (roslisp:ros-info
+         speech-client
+         "Using name ~a from /~a"
+         *speech-action-server-rosparam-name*
+         speech-action-name))
+        
+    (actionlib-client:make-simple-action-client
+     'speech-action
+     speech-action-name
+     "rasawrapper_msgs/SpeechRequestAction"
+     120)))
 
 (defun make-speech-goal (&optional (action-value "Greet"))
   (roslisp:make-message
