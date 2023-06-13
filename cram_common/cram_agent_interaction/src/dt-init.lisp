@@ -2,7 +2,7 @@
 
 ;;(defvar *ctx-designate* nil)
 (defvar *robot-name* nil)
-(defvar *table* "table_1")
+(defvar *table* "table_lack")
 (defvar str_sparql nil)
 
 (defvar *cheat* nil)
@@ -36,7 +36,7 @@
  ;; (start-ros-node "cram_dt")
   (init-ros-dt)
   (setf *robot-name* robot-name)
-  (setf *table* "table_1")
+  (setf *table* "table_lack")
   (setf *cheat* nil)
   (princ ">>>init onto man")(terpri)
   (onto::init-ontologies-man)
