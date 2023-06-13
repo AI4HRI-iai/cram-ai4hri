@@ -18,8 +18,8 @@
 (defvar ambiguous nil)
 (defvar *match-sparql* nil)
 (defvar *question-part* nil)
-(defvar *cheat-list* (vector "?0 isAbove table_1" "?0 isInContainer ?a" "?a isA VisibleDtBox"))
-(defvar *no-cheat-list* (vector "?0 isAbove table_1"))
+(defvar *cheat-list* (vector "?0 isAbove table_lack" "?0 isInContainer ?a" "?a isA VisibleDtBox"))
+(defvar *no-cheat-list* (vector "?0 isAbove table_lack"))
 (defvar base-facts-triples nil)
 
 
@@ -71,7 +71,7 @@
                 (multiple-value-list (values *state* *result* action)))))))))))
 
 (defun designate-cube (sentences)
- (setf *table* "table_1")
+ (setf *table* "table_lack")
  (setq *ctx-designate* (vector (format nil "?0 isAbove ~a" *table*)
                              "?0 isInContainer ?1" "?1 isA VisibleDtBox"))
 
@@ -283,7 +283,7 @@
     (cond 
        ((eq *cheat* t)
         (progn 
-             (let ((cubes (onto::get-from "pepper" "isAbove" "table_1" "Cube")))
+             (let ((cubes (onto::get-from "pepper" "isAbove" "table_lack" "Cube")))
               (princ (format nil "list cubes : ~a" cubes))(terpri)
               (setf *cubes* "")
               (loop for cube in (coerce cubes 'list) do
@@ -300,7 +300,7 @@
                                
                                
 
-       ((setf *cubes* (onto::get-from "pepper" "isAbove" "table_1" "Cube"))))      
+       ((setf *cubes* (onto::get-from "pepper" "isAbove" "table_lack" "Cube"))))      
     (princ (setf *nb-cubes* (- (cubes-length *cubes*) 1))))
   
 (defun reset ()
