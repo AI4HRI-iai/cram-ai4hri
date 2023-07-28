@@ -47,6 +47,7 @@
   (setf ccl::*is-logging-enabled* *enable-logging*)
   (when *enable-logging* (ccl:start-episode))
   (setf *dialog-subscriber* nil)
+  (setf *dialog-fluent* (cpl:make-fluent :name :dialog-fluent :value nil))
   ;; start subscriber and speech action-client
   (roslisp:with-ros-node ("cram_communication" :spin t)
     (initialize)
@@ -72,24 +73,30 @@
                         "Test it from the terminal with: rostopic pub ~a std_msgs/String \"data: 'right'\""
                         command-topic)
       (roslisp:ros-info cram-communication "Supported commands are:~%~{~a~^~%~}"
-                        '("waving right arm"
-                          "waving left arm"
+                        '("wave right hand"
+                          "wave left hand"
                           "right"
                           "left"
                           "greeting (requires speech server)"))
       (setf *dialog-subscriber*
-            (roslisp:subscribe command-topic "std_msgs/String" #'dialog-listener-callback))))
+            (roslisp:subscribe command-topic
+                               "std_msgs/String"
+                               #'dialog-listener-callback
+                               :max-queue-length 1))
+      (loop while T
+            do (cpl:wait-for (cpl:fl-value-changed *dialog-fluent* :test #'equal))
+               (when (cpl:value *dialog-fluent*)
+                 (urdf-proj:with-simulated-robot
+                   (apply #'task-selector (cpl:value *dialog-fluent*)))))))
   ;; end episode
   (when *enable-logging* (ccl:stop-episode)))
 
 
 (defun dialog-listener-callback (message)
   "Passes the message from /dialog as list of keywords to #'task-selector."
-  (setf *dialog-fluent* message)
-  (urdf-proj:with-simulated-robot
-    (apply #'task-selector (message->dialog-parameters message))))
+  (setf (cpl:value *dialog-fluent*) (message->dialog-parameters message)))
 
-
+  
 (defun message->dialog-parameters (message)
   "Splits std_msg/String space-separated into list of keywords."
   (roslisp:with-fields (data) message
@@ -106,6 +113,9 @@
     (:WAVING (if (member (second params) '(:right :left))
                  (waving :arm (second params))
                  (waving)))
+    (:WAVE (if (member (second params) '(:right :left))
+               (waving :arm (second params))
+               (waving)))
     ;; "pointing _ <object-name>"
     (:POINTING (if (member (third params)
                            (mapcar #'btr:name
