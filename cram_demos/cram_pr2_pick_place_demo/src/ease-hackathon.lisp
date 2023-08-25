@@ -34,6 +34,7 @@
 (defparameter *dialog-topic-name-default* "dialog")
 (defparameter *dialog-topic-name-rosparam-name* "cram_command_topic")
 (defparameter *dialog-fluent* (cpl:make-fluent :name :dialog-fluent :value nil))
+(defparameter *dialog-alive* T)
 (defparameter *enable-logging* NIL)
 
 ;; adjust this ros-name, look for the topic
@@ -43,11 +44,13 @@
 (defun interaction-demo ()
   "Entry point of the demo. Listens to the /dialog topic
  and talks to the rasawrapper action server."
-  ;; reset
+  ;; reset parameters
   (setf ccl::*is-logging-enabled* *enable-logging*)
   (when *enable-logging* (ccl:start-episode))
   (setf *dialog-subscriber* nil)
   (setf *dialog-fluent* (cpl:make-fluent :name :dialog-fluent :value nil))
+  (setf *dialog-alive* T)
+  
   ;; start subscriber and speech action-client
   (roslisp:with-ros-node ("cram_communication" :spin t)
     (initialize)
@@ -73,23 +76,25 @@
                         "Test it from the terminal with: rostopic pub ~a std_msgs/String \"data: 'right'\""
                         command-topic)
       (roslisp:ros-info cram-communication "Supported commands are:~%~{~a~^~%~}"
-                        '("wave right hand"
-                          "wave left hand"
-                          "right"
-                          "left"
-                          "greeting (requires speech server)"))
+                        '("'wave right hand' or 'right' raises the right arm"
+                          "'wave left hand' or 'left' raises the left arm"
+                          "'greeting' greets back, requires the speech server"
+                          "'bye' ends the dialog"))
       (setf *dialog-subscriber*
             (roslisp:subscribe command-topic
                                "std_msgs/String"
                                #'dialog-listener-callback
                                :max-queue-length 1))
-      (loop while T
+      ;; keep listening to NEW commands
+      ;; publish 'bye' to break out
+      (loop while *dialog-alive*
             do (cpl:wait-for (cpl:fl-value-changed *dialog-fluent* :test #'equal))
                (when (cpl:value *dialog-fluent*)
                  (urdf-proj:with-simulated-robot
-                   (apply #'task-selector (cpl:value *dialog-fluent*)))))))
-  ;; end episode
-  (when *enable-logging* (ccl:stop-episode)))
+                   (apply #'task-selector (cpl:value *dialog-fluent*)))))
+      ;; end episode
+      (roslisp:ros-info cram-communication "Stop episode.")
+      (when *enable-logging* (ccl:stop-episode)))))
 
 
 (defun dialog-listener-callback (message)
@@ -131,10 +136,18 @@
     (:LEFT "For backwards compatibility" (waving :arm :left))
     ;; "right"
     (:RIGHT "For backwards compatibility" (waving :arm :RIGHT))
+    ;; "bye"
+    (:BYE (shutdown-dialog))
     ;; "nothing"
     (:NOTHING (print "Nothing to be done"))
     (otherwise (print "No data received"))))
 
+(defun shutdown-dialog ()
+  (roslisp:ros-info cram-communication "Shutting down dialog listener.")
+  (setf *dialog-alive* NIL)
+  (roslisp:unsubscribe *dialog-subscriber*)
+  (setf *dialog-subscriber* NIL)
+  (setf (cpl:value *dialog-fluent*) NIL))
 
 (defun waving (&key (arm :right)
                  (day-time "morning"))
