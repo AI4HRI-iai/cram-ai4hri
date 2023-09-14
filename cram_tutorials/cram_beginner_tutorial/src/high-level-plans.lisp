@@ -28,7 +28,36 @@
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :tut)
- 
+
+;;(ros-load:load-system "cram_beginner_tutorial" :cram-beginner-tutorial)
+...
+;;(in-package :tut)
+...
+;;(start-ros-node "turtle1")
+
+;;(init-ros-turtle "turtle1")
+
+(defun event ()
+(top-level
+    (with-process-modules-running (turtlesim-navigation turtlesim-pen-control)
+      (navigate-without-pen '(1 1 0))
+      (exe:perform (an action (type drawing) (shape house))))))
+
+(defun logging-scenario()
+  (setf cram-tf:*tf-broadcasting-enabled* t)
+  (setf ccl::*is-logging-enabled* t)
+  (print "Start")
+  ;;(ccl::clear-detected-objects)
+  ;;(detect-objects)
+  (ccl::start-episode)
+  ;;(ccl::send-query-1-without-result "nematics_file" "Client" "ID" "'URDF'")
+  ;;(ccl::handle-detected-object *plate*)
+  (event)
+  (ccl::stop-episode)
+  (setf ccl::*episode-name* nil)
+  (print "End"))
+
+
 (defun draw-house (&key ((:shape ?shape))
                    &allow-other-keys)
   (declare (type (or keyword) ?shape))
