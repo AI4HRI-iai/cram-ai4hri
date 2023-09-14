@@ -122,7 +122,7 @@
 
 (defun log-reasoning-task (predicate-name)
   (let ((reasoning-url (create-reasoning-url predicate-name)))
-      (attach-event-to-situation reasoning-url (get-parent-uri))))
+      (attach-event-to-situation reasoning-url (get-parent-uri) "test")))
 
 
 (defun create-reasoning-url (predicate-name)

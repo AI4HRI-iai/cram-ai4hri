@@ -7,29 +7,50 @@ mem_clear_memory() :-
     tf_mem_clear,
     mng_drop(roslog, tf).
 
-mem_episode_start(Action, EnvOwl, EnvOwlIndiName, EnvUrdf, EnvUrdfPrefix, AgentOwl, AgentOwlIndiName, AgentUrdf) :-
-    get_time(StartTime),
-    mem_episode_start(Action,  EnvOwl, EnvOwlIndiName, EnvUrdf, EnvUrdfPrefix, AgentOwl, AgentOwlIndiName, AgentUrdf, StartTime).
+assert_executing_agent(AgentOwlIndiName) :- 
+    retractall(execution_agent(_)),   
+    assertz(execution_agent(AgentOwlIndiName)),
+    execution_agent(Agent).
 
-mem_episode_start(Action, EnvOwl, EnvOwlIndiName, EnvUrdf, EnvUrdfPrefix, AgentOwl, AgentOwlIndiName, AgentUrdf, StartTime) :-
+load_agent_A(AgentAOwl, AgentAOwlIndiName, AgentAUrdf) :-
+    load_owl(AgentAOwl),
+    urdf_load(AgentAOwlIndiName, AgentAUrdf, [load_rdf]).
+
+load_agent_B(AgentBOwl, AgentBOwlIndiName, AgentBUrdf) :-
+    load_owl(AgentBOwl),
+    urdf_load(AgentBOwlIndiName, AgentBUrdf, [load_rdf]).
+
+add_episode_agents(AgentAOwl,  AgentAOwlIndiName, AgentAUrdf, AgentBOwl, AgentBOwlIndiName, AgentBUrdf)  :-
+    load_agent_A(AgentAOwl, AgentAOwlIndiName, AgentAUrdf),
+    load_agent_B(AgentBOwl, AgentBOwlIndiName, AgentBUrdf).
+
+mem_episode_start(Action, EnvOwl, EnvOwlIndiName, EnvUrdf, EnvUrdfPrefix, AgentAOwl,  AgentAOwlIndiName, AgentAUrdf, AgentBOwl, AgentBOwlIndiName, AgentBUrdf) :-
+    get_time(StartTime),
+    mem_episode_start(Action, 
+                      EnvOwl, 
+                      EnvOwlIndiName, 
+                      EnvUrdf, 
+                      EnvUrdfPrefix, 
+                      AgentAOwl, 
+                      AgentAOwlIndiName, 
+                      AgentAUrdf, 
+                      AgentBOwl, 
+                      AgentBOwlIndiName, 
+                      AgentBUrdf, 
+                      StartTime).
+
+mem_episode_start(Action, EnvOwl, EnvOwlIndiName, EnvUrdf, EnvUrdfPrefix, AgentAOwl,  AgentAOwlIndiName, AgentAUrdf, AgentBOwl, AgentBOwlIndiName, AgentBUrdf, StartTime) :-
     retractall(execution_agent(_)),
     tf_logger_disable,
     mem_clear_memory,
     tf_logger_enable,
-    load_owl(EnvOwl),
-    load_owl(AgentOwl),
-    urdf_load(AgentOwlIndiName, AgentUrdf, [load_rdf]),
-    urdf_load(EnvOwlIndiName, EnvUrdf, [load_rdf,prefix(EnvUrdfPrefix)]),
-    assertz(execution_agent(AgentOwlIndiName)),
-    execution_agent(Agent),
+    add_episode_agents(AgentAOwl,  AgentAOwlIndiName, AgentAUrdf, AgentBOwl, AgentBOwlIndiName, AgentBUrdf),
     kb_project([
         new_iri(Episode, soma:'Episode'), is_episode(Episode), % Using new_iri here and below is a hideous workaround for a KnowRob bug, see https://github.com/knowrob/knowrob/issues/299
         new_iri(Action, dul:'Action'), is_action(Action),
         new_iri(TimeInterval, dul:'TimeInterval'), holds(Action, dul:'hasTimeInterval', TimeInterval), holds(TimeInterval, soma:'hasIntervalBegin', StartTime),
         new_iri(Task, dul:'Task'), has_type(Task,soma:'PhysicalTask'), executes_task(Action,Task),
-        is_setting_for(Episode,Action),
-        is_performed_by(Action,Agent),
-        new_iri(Role, soma:'AgentRole'), has_type(Role, soma:'AgentRole'), has_role(Agent,Role)
+        is_setting_for(Episode,Action)
     ]),
     % notify_synchronize(event(Action)),
     !.
@@ -58,7 +79,8 @@ mem_event_set_succeeded(Action) :- kb_project(action_succeeded(Action)).
 
 mem_event_add_diagnosis(Situation, Diagnosis) :- kb_project(satisfies(Situation, Diagnosis)).
 
-add_subaction_with_task(ParentAction,SubAction,TaskType) :-
+add_subaction_with_task(ParentAction,SubAction,TaskType, AgentOwlIndiName) :-
+    assert_executing_agent(AgentOwlIndiName), 
     execution_agent(Agent),
     kb_project([
         new_iri(SubAction, dul:'Action'), has_type(SubAction,dul:'Action'),
@@ -67,13 +89,13 @@ add_subaction_with_task(ParentAction,SubAction,TaskType) :-
         is_performed_by(SubAction,Agent)
     ]),!.
 
-mem_event_end(Event) :- execution_agent(Agent),
+mem_event_end(Event) :- 
     get_time(CurrentTime),
     kb_call([
         triple(Event,dul:'hasTimeInterval',TimeInterval),
         triple(TimeInterval,soma:'hasIntervalBegin', Start), executes_task(Event,Task)]),
     ignore(kb_unproject(triple(TimeInterval, soma:'hasIntervalEnd', double('Infinity')))),
-    kb_project([holds(TimeInterval, soma:'hasIntervalEnd', CurrentTime),new_iri(Role, soma:'AgentRole'),has_type(Role, soma:'AgentRole')]),
+    kb_project([holds(TimeInterval, soma:'hasIntervalEnd', CurrentTime)]),
     kb_project([has_role(Agent,Role) during Event, task_role(Task, Role)]),!.
     mem_event_begin(Event) :- get_time(CurrentTime),kb_project(occurs(Event) since CurrentTime),!.
 

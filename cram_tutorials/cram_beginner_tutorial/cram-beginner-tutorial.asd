@@ -41,7 +41,8 @@
                cram-prolog
                cram-process-modules
                cram-language-designator-support
-               cram-executive)
+               cram-executive
+               cram-cloud-logger)
   :components
   ((:module "src"
             :components

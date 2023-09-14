@@ -165,7 +165,8 @@
 (defun log-perform-call (designator)
   (if *is-logging-enabled*
       (let* ((cram-action-name (get-knowrob-action-name-uri (get-designator-property-value-str designator :TYPE) designator))
-             (event-name-url (attach-event-to-situation cram-action-name (get-parent-uri))))
+             (executing-agent "a")
+             (event-name-url (attach-event-to-situation cram-action-name (get-parent-uri) executing-agent)))
         (when (string-equal cram-action-name "'http://www.ease-crc.org/ont/SOMA.owl#PhysicalTask'")
           (send-comment event-name-url (concatenate 'string "Unknown Action: "  (get-designator-property-value-str designator :TYPE))))
         event-name-url)

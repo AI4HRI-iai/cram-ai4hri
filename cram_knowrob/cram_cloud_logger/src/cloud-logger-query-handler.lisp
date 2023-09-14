@@ -36,9 +36,14 @@
 (defparameter *environment-urdf* "'package://iai_kitchen/urdf_obj/kitchen.urdf'")
 (defparameter *environment-urdf-prefix* "'iai_kitchen/'")
 
-(defparameter *agent-owl* "'package://knowrob/owl/robots/PR2.owl'")
-(defparameter *agent-owl-individual-name* "'http://knowrob.org/kb/PR2.owl#PR2_0'")
-(defparameter *agent-urdf* "'package://knowrob/urdf/pr2.urdf'")
+(defparameter *agent-a-owl* "'package://knowrob/owl/robots/PR2.owl'")
+(defparameter *agent-a-owl-individual-name* "'http://knowrob.org/kb/PR2.owl#PR2_0'")
+(defparameter *agent-a-urdf* "'package://knowrob/urdf/pr2.urdf'")
+
+(defparameter *agent-b-owl* "'package://knowrob/owl/robots/PR2.owl'")
+(defparameter *agent-b-owl-individual-name* "'http://knowrob.org/kb/PR2.owl#PR2_0'")
+(defparameter *agent-b-urdf* "'package://knowrob/urdf/pr2.urdf'")
+
 
 (defun get-parent-folder-path()
   (namestring (physics-utils:parse-uri "package://cram_cloud_logger/src")))
@@ -90,13 +95,20 @@
 (defun attach-time-to-situation (predicate-name situation-uri)
   (send-query-1-without-result predicate-name situation-uri))
 
-(defun attach-event-to-situation (event-prolog-url situation-prolog-url)
+(defun attach-event-to-situation (event-prolog-url situation-prolog-url agent)
   (get-url-from-send-query-1 "SubAction"
                              "add_subaction_with_task"
                              situation-prolog-url
                              "SubAction"
-                             event-prolog-url))
-
+                             event-prolog-url
+                             (get-executing-agent agent)))
+                             
+(defun get-executing-agent (agent)
+        (cond 
+                              ((string-equal agent "a")
+                              (setf agent *agent-a-owl-individual-name*))
+                              ((string-equal agent "b"))
+                               (setf agent *agent-a-owl-individual-name*)))
 (defun send-belief-perceived-at (object-type transform rotation object-id)
   (if transform
       (send-query-1-without-result "belief_perceived_at" object-type transform rotation object-id)
@@ -138,9 +150,12 @@
          *environment-owl-individual-name*
          *environment-urdf*
          *environment-urdf-prefix*
-         *agent-owl*
-         *agent-owl-individual-name*
-         *agent-urdf*))
+         *agent-a-owl*
+         *agent-a-owl-individual-name*
+         *agent-a-urdf*
+         *agent-b-owl*
+         *agent-b-owl-individual-name*
+         *agent-b-urdf*))
   (ccl::start-situation *episode-name*))
 
 (defun stop-episode ()
