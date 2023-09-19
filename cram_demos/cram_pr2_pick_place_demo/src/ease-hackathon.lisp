@@ -37,6 +37,54 @@
 (defparameter *dialog-alive* T)
 (defparameter *enable-logging* NIL)
 
+(defvar *agent-name* "Alice")
+(defvar *onto-name* "SOMA")
+;;human detection and recognition fluents
+#| (defparameter *human-detected-fluent* (cpl:make-fluent :name :human-detected-fluent :value nil))
+(defparameter *human-recognized-fluent* (cpl:make-fluent :name :human-recognized-fluent :value nil))
+
+;;events 
+(defclass human-detected-event (occasions-events:event))
+
+(defmethod occasions-events:on-event ((occasions-events:event human-detected-event))
+  (write-line "A Human was detected")
+  (interaction-tell :greet *human*)
+  (setf *agent-intention* :inform))
+ |#
+;(defun define-onto-iri (onto-name)
+; (concatenate 'string "'http://www.ease-crc.org/ont/" onto-name ".owl#"))
+
+;(defun define-indiv-iri (individual-name onto-name)
+;  (concatenate 'string (define-onto-iri onto-name) individual-name "'")
+;  )
+
+;; recognize human ;;for now only text-based
+;(defun recognize-human (agent-name onto-name)
+;"Checks if the provided name by the human is an individual of the 'ease_coffee_customer' ontology "
+ ;(let* ((query (create-query "is_individual" (define-indiv-iri agent-name onto-name))))
+  ;  (send-query-1 query)))
+
+(defun define-onto-iri ()
+  (concatenate 'string "'http://www.ease-crc.org/ont/" *onto-name* ".owl#"))
+
+(defun define-indiv-iri ()
+  (concatenate 'string (define-onto-iri) *agent-name* "'"))
+
+;; recognize human ;;for now only text-based
+;is_individual('http://www.ease-crc.org/ont/SOMA.owl#Alice')
+(defun recognize-human ()
+"Checks if the provided name by the human is an individual of the 'ease_coffee_customer' ontology "
+ (let* ((query "is_individual('http://www.ease-crc.org/ont/SOMA.owl#Alice')"))
+ ;(concatenate 'string "is_individual(" (define-indiv-iri) ")")))
+    (ccl::send-query-1 query)))
+
+(defun add-new-indiv)   
+
+(defun say-hello ()
+(cond ((recognize-human)
+    (write-line "Hello Alice"))
+    ((write-line "Bye"))))
+
 ;; adjust this ros-name, look for the topic
 (defparameter *speech-action-server-name* "chatterbot/speak")
 (defparameter *speech-action-server-rosparam-name* "cram_to_speech_server_name")
